@@ -1,0 +1,82 @@
+# ----------------------------------------------------------------------
+# 1. KEAMANAN: Blokir Akses File Sensitif
+# ----------------------------------------------------------------------
+
+# Mencegah orang melihat daftar file (Directory Listing)
+Options -Indexes
+
+# Mencegah akses langsung ke database, file git, env, log, dll.
+<FilesMatch "\.(sqlite|db|log|ini|json|env|git)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# ----------------------------------------------------------------------
+# 2. KEAMANAN: HTTP Headers (Security Hardening)
+# ----------------------------------------------------------------------
+
+<IfModule mod_headers.c>
+    # Mencegah browser menebak-nebak tipe file (MIME-type sniffing)
+    Header set X-Content-Type-Options "nosniff"
+
+    # Mencegah website di-embed di iframe orang lain (Clickjacking protection)
+    Header set X-Frame-Options "SAMEORIGIN"
+
+    # Mengaktifkan filter XSS bawaan browser
+    Header set X-XSS-Protection "1; mode=block"
+
+    # Mengontrol informasi referrer untuk privasi
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 3. PERFORMA: Kompresi Gzip (Biar loading lebih cepat)
+# ----------------------------------------------------------------------
+
+<IfModule mod_deflate.c>
+    # Kompres file teks, html, css, js, dan json
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 4. PERFORMA: Browser Caching
+# ----------------------------------------------------------------------
+
+# Menyimpan file statis di browser user agar tidak download ulang terus
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Gambar & Favicon (Disimpan 1 tahun)
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/ico "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+
+    # Audio/MP3 (Disimpan 1 tahun - Penting untuk sound effect kamu)
+    ExpiresByType audio/mpeg "access plus 1 year"
+
+    # CSS & JavaScript (Disimpan 1 bulan)
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+
+    # Data JSON & Font (Disimpan 1 bulan)
+    ExpiresByType application/json "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 month"
+</IfModule>
